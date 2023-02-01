@@ -127,6 +127,11 @@ export default function Home() {
       const response = await removeObject(form);
       setImageDataState2(response, true,true,isRemoveAll);
       if (isRemoveAll && !response?.headers?.get("coordinates")) {
+        setBrushData({
+          ...brushData, 
+          brushMode: true,
+          brushStock: getBrushSize()
+        });
         toast.success("All objects removed successfully");
       }
       if (
@@ -329,6 +334,11 @@ export default function Home() {
             duplicate = JSON.stringify(removeDuplicate(JSON.parse(duplicate)));
           } catch (ex) {}
           if (showToaster && (JSON.parse(newJson)?.length === 0 || !newJson)) {
+            setBrushData({
+              ...brushData,
+              brushMode: true,
+              brushStock: getBrushSize()
+            });
             toast.warning("No objects detected");
           }
           setOriginalCoord(JSON.parse(duplicate));

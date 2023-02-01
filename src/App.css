@@ -418,7 +418,12 @@ h3,
 .object-box {
   border: 0.7vh solid;
 }
-
+.handle {
+  position: absolute;
+  border: 0.1em solid black;
+  width: 1em;
+  height: 1em;
+}
 .object-box-key {
   font-size: 2vh ;
   color: white;
