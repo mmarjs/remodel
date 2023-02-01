@@ -8,7 +8,6 @@ import {
 } from "../services/imageServices";
 import { toast } from "react-toastify";
 import { ImageContext } from "../context/imageContext";
-import CanvasModal from "../components/canvasModal";
 import HomeShimmer from "../components/shimmer/homeShimmer";
 import { Constants } from "../data/constants";
 import { getBrushSize } from "../utils/getBrushSize";

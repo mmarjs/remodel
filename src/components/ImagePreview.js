@@ -1,8 +1,6 @@
 import React, { useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ImageContext } from "../context/imageContext";
-import Share from "./share";
-import Toolbar from "./toolbar";
 import DetectedImageBox from "./detectedImage";
 import { abortImageServices } from "../services/imageServices";
 import { download } from "../utils/download";
