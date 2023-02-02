@@ -5,11 +5,8 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 import "./assets/css/style.css";
 import "./App.css";
 import { ImageContext } from "./context/imageContext";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ToastContainer } from "react-toastify";
-import { v4 as uuidv4 } from "uuid";
-// import { v1 as uuidv1 } from 'uuid';
-import { validate as uuidValidate } from "uuid";
 
 function App({ router }) {
   const [imageData, setImageData] = useState({
@@ -30,17 +27,6 @@ function App({ router }) {
     isRemoveAllUsed: 0,
   });
 
-  const setSession = () => {
-    const sessionId = localStorage.getItem("Session_Id");
-
-    if (!sessionId || !uuidValidate(sessionId?.toString())) {
-      localStorage.setItem("Session_Id", uuidv4());
-    }
-  };
-
-  // useEffect(() => {
-  //   setSession()
-  // }, [])
   return (
     <div
       className={imageData?.originalImage ? "without-header" : "with-header"}

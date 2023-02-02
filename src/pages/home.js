@@ -11,6 +11,7 @@ import { ImageContext } from "../context/imageContext";
 import HomeShimmer from "../components/shimmer/homeShimmer";
 import { Constants } from "../data/constants";
 import { getBrushSize } from "../utils/getBrushSize";
+
 export default function Home() {
   const [imageData, setImageData] = useContext(ImageContext);
   const [history, setHistory] = useState([]);
@@ -37,17 +38,14 @@ export default function Home() {
   });
 
   const [localSrc, setLocalSrc] = useState(imageData.originalImage);
-  // const uniqueSessionid = localStorage.getItem('Session_Id')
 
   useEffect(() => {
-    // sessionStorage.setItem('key',(new Date()).getTime())
     if (imageData.originalImage) {
+      console.log("aaaaaa", imageData.originalImage)
       let img = new Image();
       img.onload = function () {
         setImageDimension({ height: img?.height, width: img?.width });
       };
-      // if(!imageData.image)
-      //  blob = URL.createObjectURL( imageData.originalImage);
 
       img.src =URL.createObjectURL(imageData.originalImage);
     }
@@ -68,38 +66,9 @@ export default function Home() {
       setIsDeletingAll(isRemoveAll);
       drawMask(object, isRemoveAll);
       return;
-      setIsDeletingObject(true);
-      let form = new FormData();
-      form.append("original_image", imageData?.originalImage);
-      // form.append("folder_name", imageData?.Folder_name_for_masks);
-      // form.append("object_removal_name", isRemoveAll ? "" : object.key);
-      // form.append("Session_Id", uniqueSessionid);
-
-      form.append("remove_all", isRemoveAll ? 1 : 0);
-
-      const { data } = await removeObject(form);
-      setImageDataState2(data, true);
-      if (isRemoveAll && !data?.[0]?.Coordinates) {
-        toast.success("All objects removed successfully");
-      }
-      if (
-        data?.[0]?.Coordinates !== "[]" &&
-        data?.[0]?.Coordinates.startsWith("[")
-      ) {
-        let slicedkey = object?.key?.slice(
-          0,
-          object?.key?.indexOf("0") > -1
-            ? object?.key?.indexOf("0")
-            : object?.key?.length
-        );
-        toast.success(slicedkey + " deleted successfully");
-      }
-      setIsDeletingObject(false);
-      setIsDeletingAll(false);
     } catch (ex) {
       setIsDeletingObject(false);
       setIsDeletingAll(false);
-
       if (
         ex?.code !== Constants.ERRORS.CANCELED_ERROR.code &&
         ex?.response?.status >= 400 &&
@@ -112,15 +81,9 @@ export default function Home() {
   const handleDelete = async (maskImg, object, isRemoveAll = false) => {
     try { 
       let form = new FormData();
-      // form.append("folder_name", imageData?.Folder_name_for_masks);
-
-      // form.append("object_removal_name", isRemoveAll ? object.key : "");
-
-      // form.append("Session_Id", uniqueSessionid);
 
       form.append("remove_all", isRemoveAll ? 1 : 0);
       form.append("mask_image", maskImg);
-
       form.append("original_image", imageData?.originalImage);
 
       const response = await removeObject(form);
@@ -168,8 +131,6 @@ export default function Home() {
 
       form.append("original_image", imageData?.originalImage);
       form.append("image_mask", brushedImage);
-      // form.append("list_of_coordinates_for_overlapping",JSON.stringify(imageData?.objectsWithOriginal));
-      // form.append('Session_Id', uniqueSessionid)
       form.append(
         "check_user_used_remove_all_or_not",
         imageData?.isRemoveAllUsed
@@ -299,169 +260,50 @@ export default function Home() {
   };
 
   const drawMask = (object, isRemoveAll) => {
-    let dyanmicCanvas = document.createElement("CANVAS");
+    let dynamicCanvas = document.createElement("CANVAS");
     var img = document.createElement("IMG");
     img.onload = function () {
-      dyanmicCanvas.height = img.height;
-      dyanmicCanvas.width = img.width;
-      let ctx = dyanmicCanvas.getContext("2d");
+      dynamicCanvas.height = img.height;
+      dynamicCanvas.width = img.width;
+      let ctx = dynamicCanvas.getContext("2d");
       return draw(ctx, img, object, isRemoveAll);
     };
-     img.src = URL.createObjectURL(imageData?.originalImage);;
-    // let blob = URL.createObjectURL(imageData.originalImage);
-    // img.src = blob;
-   
+    //  img.src = URL.createObjectURL(imageData?.originalImage);
   };
 
-    const setImageDataState2 = (response, showToaster, isSetOriginal ,isRemoveAll) => {
-      // history.push(data);
-      //   setHistory(history.slice(-4))
-      try {
-        
-        if (response.data && !isRemoveAll) {
-          let Padding_from_all_sides = JSON.parse(response?.headers?.get(
-            "padding_from_all_sides"
-          ));
-      
-          let detectedCoords = response?.headers?.get("coordinates");
-          
-          let newJson = detectedCoords?.replace(/([a-zA-Z0-9]+?):/g, '"$1":');
-          newJson = newJson?.replace(/'/g, '"');
-          
-          let duplicate = newJson;
-          try {
-            duplicate = JSON.stringify(removeDuplicate(JSON.parse(duplicate)));
-          } catch (ex) {}
-          if (showToaster && (JSON.parse(newJson)?.length === 0 || !newJson)) {
-            setBrushData({
-              ...brushData,
-              brushMode: true,
-              brushStock: getBrushSize()
-            });
-            toast.warning("No objects detected");
-          }
-          setOriginalCoord(JSON.parse(duplicate));
-          let padding = {
-            top: Padding_from_all_sides[0],
-            bottom: Padding_from_all_sides[1],
-            left: Padding_from_all_sides[2],
-            right: Padding_from_all_sides[3],
-          };
-
-          if (isSetOriginal) {
-            setTimeout(() => {
-              setImageData({
-                ...imageData,
-                imageHistory: [],
-                originalImage: response.data,
-                // image: data?.[2]?.Encoded_detected_image,
-                // Folder_name_for_masks: data?.[2]?.Folder_name_for_masks,
-                coords: JSON.parse(duplicate),
-                padding,
-              });
-            });
-          } else {
-            let img = new Image();
-
-            img.onload = function () {
-              setDetectedDimension({
-                height: img.height,
-                width: img.width,
-              });
-              setTimeout(() => {
-                setImageData({
-                  ...imageData,
-                  imageHistory: [],
-                  // originalImage: data?.[2]?.Encoded_detected_image,
-                  image: response.data,
-                  //  Folder_name_for_masks: data?.[2]?.Folder_name_for_masks,
-                  coords: JSON.parse(duplicate),
-                  padding,
-                });
-              });
-            };
-            // if (!imageData.image)
-            //   blob = URL.createObjectURL(data?.[2]?.Encoded_detected_image);
-            img.src = URL.createObjectURL(response.data);
-          }
-        }else if (response.data && isRemoveAll) {
-          setOriginalCoord([]);
-          setTimeout(() => {
-            setImageData({
-              ...imageData,
-              isRemoveAllUsed: 1,
-              imageHistory: [],
-              originalImage:response?.data || imageData?.originalImage,
-              coords: [],
-            });
-          });
-        }
-      } catch (ex) {
-        setOriginalCoord([]);
-        if (showToaster) toast.warning("No objects detected");
-        if (isSetOriginal) {
-          setTimeout(() => {
-            setImageData({
-              ...imageData,
-              imageHistory: [],
-              originalImage:
-                response.data || imageData?.originalImage,
-              coords: [],
-            });
-          });
-        } else {
-          let img = new Image();
-          img.onload = function () {
-            setDetectedDimension({
-              height: img.height,
-              width: img.width,
-            });
-            setTimeout(() => {
-              setImageData({
-                ...imageData,
-                imageHistory: [],
-                image: response.data || imageData?.originalImage,
-                //  Folder_name_for_masks: data?.[2]?.Folder_name_for_masks,
-                coords: [],
-              });
-            });
-          };
-          img.src =URL.createObjectURL(  (response.data?.length > 5
-              ? response.data
-              : imageData?.originalImage));
-          
-
-          // let blob = URL.createObjectURL(data?.[2]?.Encoded_detected_image?.length > 5
-          //   ? data?.[2]?.Encoded_detected_image
-          //   : imageData?.originalImage);
-          // img.src = blob;
-        }
-      }
-    };
-  const setImageDataState = (data, showToaster, isSetOriginal = true) => {
+  const setImageDataState2 = (response, showToaster, isSetOriginal ,isRemoveAll) => {
     // history.push(data);
     //   setHistory(history.slice(-4))
     try {
-      let newJson = data?.[0]?.Coordinates?.replace(
-        /([a-zA-Z0-9]+?):/g,
-        '"$1":'
-      );
-      newJson = newJson?.replace(/'/g, '"');
-      let duplicate = newJson;
-      try {
-        duplicate = JSON.stringify(removeDuplicate(JSON.parse(duplicate)));
-      } catch (ex) {}
-
-      if (data?.[2]?.Encoded_detected_image) {
+      
+      if (response.data && !isRemoveAll) {
+        let Padding_from_all_sides = JSON.parse(response?.headers?.get(
+          "padding_from_all_sides"
+        ));
+    
+        let detectedCoords = response?.headers?.get("coordinates");
+        
+        let newJson = detectedCoords?.replace(/([a-zA-Z0-9]+?):/g, '"$1":');
+        newJson = newJson?.replace(/'/g, '"');
+        
+        let duplicate = newJson;
+        try {
+          duplicate = JSON.stringify(removeDuplicate(JSON.parse(duplicate)));
+        } catch (ex) {}
         if (showToaster && (JSON.parse(newJson)?.length === 0 || !newJson)) {
+          setBrushData({
+            ...brushData,
+            brushMode: true,
+            brushStock: getBrushSize()
+          });
           toast.warning("No objects detected");
         }
         setOriginalCoord(JSON.parse(duplicate));
         let padding = {
-          top: data?.[1]?.Padding_from_all_sides[0],
-          bottom: data?.[1]?.Padding_from_all_sides[1],
-          left: data?.[1]?.Padding_from_all_sides[2],
-          right: data?.[1]?.Padding_from_all_sides[3],
+          top: Padding_from_all_sides[0],
+          bottom: Padding_from_all_sides[1],
+          left: Padding_from_all_sides[2],
+          right: Padding_from_all_sides[3],
         };
 
         if (isSetOriginal) {
@@ -469,7 +311,7 @@ export default function Home() {
             setImageData({
               ...imageData,
               imageHistory: [],
-              originalImage: data?.[2]?.Encoded_detected_image,
+              originalImage: response.data,
               // image: data?.[2]?.Encoded_detected_image,
               // Folder_name_for_masks: data?.[2]?.Folder_name_for_masks,
               coords: JSON.parse(duplicate),
@@ -478,6 +320,7 @@ export default function Home() {
           });
         } else {
           let img = new Image();
+
           img.onload = function () {
             setDetectedDimension({
               height: img.height,
@@ -488,29 +331,25 @@ export default function Home() {
                 ...imageData,
                 imageHistory: [],
                 // originalImage: data?.[2]?.Encoded_detected_image,
-                image: data?.[2]?.Encoded_detected_image,
+                image: response.data,
                 //  Folder_name_for_masks: data?.[2]?.Folder_name_for_masks,
                 coords: JSON.parse(duplicate),
                 padding,
               });
             });
           };
-          let blob = imageData.base64Start + data?.[2]?.Encoded_detected_image;
           // if (!imageData.image)
           //   blob = URL.createObjectURL(data?.[2]?.Encoded_detected_image);
-           img.src = blob;
+          img.src = URL.createObjectURL(response.data);
         }
-      } else if (data?.[1]?.Encoded_detected_image) {
+      }else if (response.data && isRemoveAll) {
         setOriginalCoord([]);
         setTimeout(() => {
           setImageData({
             ...imageData,
             isRemoveAllUsed: 1,
             imageHistory: [],
-            originalImage:
-              data?.[1]?.Encoded_detected_image?.length > 5
-                ? data?.[1]?.Encoded_detected_image
-                : imageData?.originalImage,
+            originalImage:response?.data || imageData?.originalImage,
             coords: [],
           });
         });
@@ -524,9 +363,7 @@ export default function Home() {
             ...imageData,
             imageHistory: [],
             originalImage:
-              data?.[2]?.Encoded_detected_image?.length > 5
-                ? data?.[2]?.Encoded_detected_image
-                : imageData?.originalImage,
+              response.data || imageData?.originalImage,
             coords: [],
           });
         });
@@ -541,42 +378,32 @@ export default function Home() {
             setImageData({
               ...imageData,
               imageHistory: [],
-              image:
-                data?.[2]?.Encoded_detected_image?.length > 5
-                  ? data?.[2]?.Encoded_detected_image
-                  : imageData?.originalImage,
+              image: response.data || imageData?.originalImage,
               //  Folder_name_for_masks: data?.[2]?.Folder_name_for_masks,
               coords: [],
             });
           });
         };
-        img.src =
-          imageData.base64Start +
-          (data?.[2]?.Encoded_detected_image?.length > 5
-            ? data?.[2]?.Encoded_detected_image
-            : imageData?.originalImage);
-
-
-          // let blob = URL.createObjectURL(data?.[2]?.Encoded_detected_image?.length > 5
-          //   ? data?.[2]?.Encoded_detected_image
-          //   : imageData?.originalImage);
-          // img.src = blob;   
+        img.src =URL.createObjectURL(  (response.data?.length > 5
+            ? response.data
+            : imageData?.originalImage));
         
+
+        // let blob = URL.createObjectURL(data?.[2]?.Encoded_detected_image?.length > 5
+        //   ? data?.[2]?.Encoded_detected_image
+        //   : imageData?.originalImage);
+        // img.src = blob;
       }
     }
   };
 
   const removeDuplicate = (objects) => {
  
-    // if(!Array.isArray(objects)) return [];
     objects = objects.map((c) => {
-      // let increaseX = ((c.coordinates[2]-c.coordinates[0]) * 2) / 100; 
-      // let increaseY = ((c.coordinates[2] - c.coordinates[0]) * 2) / 100; 
       let w = c.coordinates[2] - c.coordinates[0];
       let l =c.coordinates[3] - c.coordinates[1]
-     let d = Math.sqrt(w*w+l*l)
+      let d = Math.sqrt(w*w+l*l)
       let increaseD = d*3/100;
-      // let increaseY = ((c.coordinates[3] -c.coordinates[1]) * 2) / 100; 
 
       c.coordinates[0] = -increaseD+ c.coordinates[0];
       c.coordinates[1] = -increaseD+ c.coordinates[1];
@@ -584,6 +411,7 @@ export default function Home() {
       c.coordinates[3] = increaseD+ c.coordinates[3];
       return c;
     });
+    
     let matched = [];
     let d = objects.filter((c) => {
       if (matched?.some((m) => m.key === c.key)) return false;
@@ -617,7 +445,6 @@ export default function Home() {
         <UploadImage
           localSrc={localSrc}
           setLocalSrc={setLocalSrc}
-          // setOriginalImage={imageData?.setOriginalImage}
           isGettingImage={isGettingImage}
         />
       ) : (
@@ -644,17 +471,6 @@ export default function Home() {
           setDrawPath={setDrawPath}
         ></ImagePreview>
       )}
-      {/* <CanvasModal
-        setDrawPath={setDrawPath}
-        brushData={brushData}
-        setBrushData={setBrushData}
-        brushedImage={brushedImage}
-        isBrushed={isBrushed}
-        setIsBrushed={setIsBrushed}
-        isBrushing={isBrushing}
-        setBrushedImage={setBrushedImage}
-        imageDimension={imageDimension}
-      /> */}
     </div>
   );
 }

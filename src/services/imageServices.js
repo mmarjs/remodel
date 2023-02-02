@@ -15,7 +15,6 @@ export const removeObject = (data) => {
   return http.post("object_removal", data, {
     signal:controller.signal,
     responseType:"blob"
-    // headers: { "Content-Type": "multipart/form-data" },
   });
 };
 
@@ -23,11 +22,10 @@ export const removeFromBrush = (data) => {
   return http.post("removal_brush", data, {
     signal: controller.signal,
     responseType: "blob",
-    // headers: { "Content-Type": "multipart/form-data" },
   });
 };
 
-export const abortImageServices = (data) => {
+export const abortImageServices = () => {
   controller.abort();
   controller = new AbortController();
 };
