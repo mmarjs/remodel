@@ -40,7 +40,6 @@ export default function Home() {
 
   useEffect(() => {
     if (imageData.originalImage) {
-      console.log("aaaaaa", imageData.originalImage)
       let img = new Image();
       img.onload = function () {
         setImageDimension({ height: img?.height, width: img?.width });
@@ -86,7 +85,7 @@ export default function Home() {
       form.append("original_image", imageData?.originalImage);
 
       const response = await removeObject(form);
-      setImageDataState2(response, true,true,isRemoveAll);
+      setImageDataState(response, true,true,isRemoveAll);
       if (isRemoveAll && !response?.headers?.get("coordinates")) {
         setBrushData({
           ...brushData, 
@@ -137,7 +136,7 @@ export default function Home() {
 
       const response = await removeFromBrush(form);
       if (imageData?.coords?.length) setIsBrushed(true);
-      setImageDataState2(response, false,true,false);
+      setImageDataState(response, false,true,false);
       setBrushedImage("");
       setIsBrushing(false);
     } catch (ex) {
@@ -159,14 +158,9 @@ export default function Home() {
       let form = new FormData();
       form.append("original_image", imageData?.originalImage);
       setIsGettingImage(true);
-      // window.scroll({
-      //   top: 0,
-      //   behavior: "smooth",
-      // });
-      // form.append('Session_Id', uniqueSessionid)
       let response  = await getImage(form);
      
-        setImageDataState2(response, true, false,false);
+        setImageDataState(response, true, false,false);
 
       setTimeout(() => {
         setIsGettingImage(false);
@@ -211,32 +205,29 @@ export default function Home() {
       rects = [...originalCoord];
     }
 
-    let modifiedRects = rects?.map((v, i) => {
+    let modifiedRects = rects?.map((v) => {
       let temp = [...v?.coordinates];
       temp[0] = -(px * rx) + temp[0] * rx;
       temp[1] = ry - py * ry + temp?.[1] * ry;
-
       temp[2] = -(px * rx) + temp?.[2] * rx - temp[0];
       temp[3] = ry - py * ry + temp?.[3] * ry - temp[1];
       return temp;
     });
 
-    // console.log(ctx,img)
-    ctx.drawImage(img, 0, 0);
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    ctx.fill();
+    // ctx.drawImage(img, 0, 0);
+    // ctx.fillStyle = "black";
+    // ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    // ctx.fill();
+
     ctx.fillStyle = "white";
     for (let item of modifiedRects) {
-      //  ctx.strokeStyle = "rgba(0,0,0,1)";
-      //  ctx.lineWidth = 3;
-      // ctx.strokeRect(0, 0, 100, 100);
       ctx.fillRect(item[0], item[1], item[2], item[3]);
     }
     ctx.fill();
     
     ctx.canvas.toBlob(
       (maskImg) => {
+        // console.log("maskImg", maskImg) //Blob {size: 8514, type: 'image/jpeg'}
         handleDelete(maskImg, object, isRemoveAll);
       },
       "image/jpeg",
@@ -247,18 +238,16 @@ export default function Home() {
   const drawMask = (object, isRemoveAll) => {
     let dynamicCanvas = document.createElement("CANVAS");
     var img = document.createElement("IMG");
+    img.src = URL.createObjectURL(imageData?.originalImage);
     img.onload = function () {
       dynamicCanvas.height = img.height;
       dynamicCanvas.width = img.width;
       let ctx = dynamicCanvas.getContext("2d");
       return draw(ctx, img, object, isRemoveAll);
     };
-     img.src = URL.createObjectURL(imageData?.originalImage);
   };
 
-  const setImageDataState2 = (response, showToaster, isSetOriginal ,isRemoveAll) => {
-    // history.push(data);
-    //   setHistory(history.slice(-4))
+  const setImageDataState = (response, showToaster, isSetOriginal ,isRemoveAll) => {
     try {
       
       if (response.data && !isRemoveAll) {
@@ -267,11 +256,10 @@ export default function Home() {
         ));
     
         let detectedCoords = response?.headers?.get("coordinates");
-        
         let newJson = detectedCoords?.replace(/([a-zA-Z0-9]+?):/g, '"$1":');
         newJson = newJson?.replace(/'/g, '"');
-        
         let duplicate = newJson;
+        
         try {
           duplicate = JSON.stringify(removeDuplicate(JSON.parse(duplicate)));
         } catch (ex) {}
@@ -297,8 +285,6 @@ export default function Home() {
               ...imageData,
               imageHistory: [],
               originalImage: response.data,
-              // image: data?.[2]?.Encoded_detected_image,
-              // Folder_name_for_masks: data?.[2]?.Folder_name_for_masks,
               coords: JSON.parse(duplicate),
               padding,
             });
@@ -315,19 +301,15 @@ export default function Home() {
               setImageData({
                 ...imageData,
                 imageHistory: [],
-                // originalImage: data?.[2]?.Encoded_detected_image,
                 image: response.data,
-                //  Folder_name_for_masks: data?.[2]?.Folder_name_for_masks,
                 coords: JSON.parse(duplicate),
                 padding,
               });
             });
           };
-          // if (!imageData.image)
-          //   blob = URL.createObjectURL(data?.[2]?.Encoded_detected_image);
           img.src = URL.createObjectURL(response.data);
         }
-      }else if (response.data && isRemoveAll) {
+      } else if (response.data && isRemoveAll) {
         setOriginalCoord([]);
         setTimeout(() => {
           setImageData({
@@ -364,20 +346,13 @@ export default function Home() {
               ...imageData,
               imageHistory: [],
               image: response.data || imageData?.originalImage,
-              //  Folder_name_for_masks: data?.[2]?.Folder_name_for_masks,
               coords: [],
             });
           });
         };
-        img.src =URL.createObjectURL(  (response.data?.length > 5
+        img.src =URL.createObjectURL((response.data?.length > 5
             ? response.data
             : imageData?.originalImage));
-        
-
-        // let blob = URL.createObjectURL(data?.[2]?.Encoded_detected_image?.length > 5
-        //   ? data?.[2]?.Encoded_detected_image
-        //   : imageData?.originalImage);
-        // img.src = blob;
       }
     }
   };
@@ -415,6 +390,7 @@ export default function Home() {
           matched.push(t);
           return t;
         }
+        // return matched;
       });
       return true;
     });
