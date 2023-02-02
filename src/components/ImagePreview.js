@@ -4,7 +4,6 @@ import { ImageContext } from "../context/imageContext";
 import DetectedImageBox from "./detectedImage";
 import { abortImageServices } from "../services/imageServices";
 import { download } from "../utils/download";
-import { Constants } from "../data/constants";
 import { getBrushSize } from "../utils/getBrushSize";
 import { v4 as uuidv4 } from "uuid";
 
@@ -22,16 +21,13 @@ function ImagePreview({
   isBrushed,
   isDeletingAll,
   history,
-  handleUndo,
   setHistory,
-  isUndoing,
   brushedImage,
   isBrushing,
   setBrushedImage,
   setDrawPath,
 }) {
   const [imageData, setImageData] = useContext(ImageContext);
-  // const uniqueSessionid = localStorage.getItem("Session_Id");
   const handleBack = () => {
     setLocalSrc("");
     setIsBrushed(false);
@@ -55,20 +51,6 @@ function ImagePreview({
 
   const handleDownload = () => {
     download("Touchupp_" + uuidv4(), imageData?.originalImage);
-  };
-
-  const getDimension = () => {
-    
-    return imageDimension?.width > 1024
-      ? window?.innerWidth >= Constants?.screenDimensions2?.xl?.screenWidth
-        ? Constants?.screenDimensions2?.xl
-        : window?.innerWidth >= Constants?.screenDimensions2?.lg?.screenWidth
-        ? Constants?.screenDimensions2?.lg
-        : window?.innerWidth >= Constants?.screenDimensions2?.md?.screenWidth
-        ? Constants?.screenDimensions2?.md
-        : Constants?.screenDimensions2?.sm
-      : Constants?.screenDimensions2?.xsm;
-    return detectedDimension;
   };
 
   useEffect(() => {
@@ -148,17 +130,8 @@ function ImagePreview({
 
             <div className="mt-5 img-sec  position-relative">
               <div className="row">
-                {/* Original Image */}
                 <div className="col-12 align-items-center justify-content-center d-flex">
-                  <div
-                    style={
-                      {
-                        // height: getDimension()?.height + "px",
-                        // height:'auto',
-                        // width: getDimension()?.width + "px",
-                      }
-                    }
-                  >
+                  <div>
                     <DetectedImageBox
                       brushData={brushData}
                       setBrushData={setBrushData}
@@ -169,8 +142,6 @@ function ImagePreview({
                       detectedDimension={detectedDimension}
                       imageDimension={imageDimension}
                       history={history}
-                      handleUndo={handleUndo}
-                      isUndoing={isUndoing}
                       isBrushed={isBrushed}
                       setIsBrushed={setIsBrushed}
                       brushedImage={brushedImage}
@@ -181,16 +152,7 @@ function ImagePreview({
                     />
                   </div>
                 </div>
-                {/* Modified Image */}
-                {/* <div className="col-6 side-image">
-                  <ImageBox
-                    isDeletingObject={isDeletingObject}
-                    brushData={brushData}
-                    setBrushData={setBrushData}
-                  />
-                </div> */}
               </div>
-
               <div className="row mt-2" id="scrollId"></div>
             </div>
           </div>

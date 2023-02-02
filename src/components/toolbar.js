@@ -15,7 +15,7 @@ function Toolbar({
   handleDone,
   canvasData,
 }) {
-  const [imageData, setImageData] = useContext(ImageContext);
+  const [ imageData ] = useContext(ImageContext);
 
   const handleBrushMode = () => {
     if (isDeletingObject || isBrushing || !brushData.brushMode) return;

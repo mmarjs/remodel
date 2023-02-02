@@ -15,7 +15,6 @@ import { getBrushSize } from "../utils/getBrushSize";
 export default function Home() {
   const [imageData, setImageData] = useContext(ImageContext);
   const [history, setHistory] = useState([]);
-  const [isUndoing, setIsUndoing] = useState(false);
   const [originalCoord, setOriginalCoord] = useState([]);
   const [isGettingImage, setIsGettingImage] = useState(false);
   const [isDeletingObject, setIsDeletingObject] = useState(false);
@@ -190,16 +189,6 @@ export default function Home() {
     }
   };
 
-  const handleUndo = async () => {
-    // if(history?.length<2 || isUndoing) return;
-    // setIsUndoing(true)
-    // setImageDataState2(history[history.length-1],true)
-    // setTimeout(()=>{
-    //   setHistory(history.slice(0,history.length-2))
-    //     setIsUndoing(false);
-    // })
-  };
-
   const draw = (ctx, img, object, isRemoveAll) => {
     let rx =
       ctx.canvas.width /
@@ -253,10 +242,6 @@ export default function Home() {
       "image/jpeg",
       1
     );
-    //  console.log(jpegUrl)
-    // let maskImg = jpegUrl.slice(jpegUrl?.indexOf(",") + 1);
-    //  setDrawPath(modifiedPaths);
-    //  setBrushedImage(brushedSrc);
   };
 
   const drawMask = (object, isRemoveAll) => {
@@ -268,7 +253,7 @@ export default function Home() {
       let ctx = dynamicCanvas.getContext("2d");
       return draw(ctx, img, object, isRemoveAll);
     };
-    //  img.src = URL.createObjectURL(imageData?.originalImage);
+     img.src = URL.createObjectURL(imageData?.originalImage);
   };
 
   const setImageDataState2 = (response, showToaster, isSetOriginal ,isRemoveAll) => {
@@ -462,9 +447,7 @@ export default function Home() {
           isBrushed={isBrushed}
           setIsBrushed={setIsBrushed}
           history={history}
-          handleUndo={handleUndo}
           setHistory={setHistory}
-          isUndoing={isUndoing}
           brushedImage={brushedImage}
           isBrushing={isBrushing}
           setBrushedImage={setBrushedImage}
