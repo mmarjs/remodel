@@ -289,8 +289,7 @@ function DetectedImageBox({
               <TransformComponent>
                 <div
                   ref={boxRef}
-                  className="d-flex justify-content-center align-items-center position-relative cursor-pan "
-                >
+                  className="d-flex justify-content-center align-items-center position-relative cursor-pan" id="image_panel">
                   <TailSpin
                     height="50"
                     width="50"

@@ -114,7 +114,7 @@ function Toolbar({
             onClick={() => (canvasData?.path?.length  && !isBrushing? handleDone() : "")}
             className="btn btn-danger btn-sm remove-all tool-btn px-4"
           >
-            Done
+            remove
           </button>
         </div></>
         )}
